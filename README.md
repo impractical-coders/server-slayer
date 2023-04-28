@@ -34,3 +34,4 @@
 - Usability. Users can use the app anytime, anywhere.
 
 ## Server Slayer UML
+![uml](https://user-images.githubusercontent.com/120158188/235263756-595b6e6a-8ed5-4a99-8a9c-58bb44ecee78.png)
