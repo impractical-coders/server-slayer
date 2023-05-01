@@ -47,18 +47,13 @@ gameSocket.on('myRole', (myRole) => {
   let rngRoomIdx = Math.floor(Math.random() * rooms.length);
   gameSocket.emit('roomChange', rooms[rngRoomIdx], name);
 
-
+//TODO: get the status of the room (who is in there, abd are you in there)
   //players choice
   if (role === 'slayer') {
-    while (!['1', '2', '3'].includes(choice)) {
-      choice = prompt('[1] Move [2] Kill [3] ChatRoom | Enter a number: ');
-      // PROMPT can NOT be too long, will cause loop
-      // while (choice !== '1' && choice !== '2' && choice !== '3') {
-      console.log('wrong input', choice);
-      choice = prompt('What do you want to do (Please type in the number)? [1] Move to another room [2] Kill a player [3] Global Chat Room');
-    }
+    choice = prompt('[1] Move [2] Kill | Enter a number: ');
+
     if (choice === '1') {
-      let toRoom = prompt('Which room do you want to go to? (Please type in the number)? [1] Bathroom [2] Basement [3] Attic');
+      let toRoom = prompt('[1] Bathroom [2] Basement [3] Attic | Enter a number: ');
       // TODO: FIX it will keep prompting until you hit enter
       while (toRoom !== '1' && toRoom !== '2' && toRoom !== '3') {
         toRoom = prompt('Which room do you want to go to? (Please type in the number)? [1] Bathroom [2] Basement [3] Attic');
@@ -73,8 +68,14 @@ gameSocket.on('myRole', (myRole) => {
       console.log('slayer option3 chatroom ', choice);
       //open the global chatroom
     }
+    while (!['1', '2', '3'].includes(choice)) {
+      // PROMPT can NOT be too long, will cause loop
+      // while (choice !== '1' && choice !== '2' && choice !== '3') {
+      console.log('wrong input', choice);
+      choice = prompt('What do you want to do (Please type in the number)? [1] Move to another room [2] Kill a player [3] Global Chat Room');
+    }
   } else if (role === 'human') {
-    choice = prompt('What do you want to do (Please type in the number)? [1] Move to another room [2] Action [3] Global Chat Room');
+    choice = prompt('[1] Move [2] Action | Enter a number: ');
     // need to apply what is from above
     if (choice === '1') {
       console.log('human option1 move', choice);
