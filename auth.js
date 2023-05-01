@@ -12,7 +12,6 @@ const client = jwksClient({
 });
 
 // getkey function to intiate process
-// this comes from the jsonwebtoken docs
 // https://www.npmjs.com/package/jsonwebtoken (search for auth0)
 function getKey(header, callback) {
   client.getSigningKey(header.kid, function (err, key) {
