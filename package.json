@@ -4,9 +4,10 @@
   "description": "Server Slayer is a simple game based on the popularity of the Among Us game.",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "test": "jest --verbose --coverage",
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "player": "node clients/player/index.js"
   },
   "keywords": [],
   "author": "",
