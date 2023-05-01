@@ -1,18 +1,18 @@
 'use strict';
 
-const { readers } = require('../models');
+const { players } = require('../models');
 
 module.exports = async (req, res, next) => {
   try{
-    if(!req.headers.authorization) { _authError(); }
+    if(!req.headers.authorization) { authError(); }
 
     const token = req.headers.authorization.split(' ').pop();
-    const validUser = await readers.authenticateToken(token);
+    const validUser = await players.authenticateToken(token);
     req.user = validUser;
     req.token = validUser.token;
     next();
   } catch (e) {
-    _authError();
+    authError();
   }
 
   function authError() {
