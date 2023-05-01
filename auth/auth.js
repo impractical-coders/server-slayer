@@ -3,7 +3,7 @@
 //jwt package - json web token
 const jwt = require('jsonwebtoken');
 // basic auth package
-
+const auth = require('basic-auth');
 // jwks - json web key set
 const jwksClient = require('jwks-rsa');
 
