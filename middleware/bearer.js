@@ -7,9 +7,9 @@ module.exports = async (req, res, next) => {
     if(!req.headers.authorization) { authError(); }
 
     const token = req.headers.authorization.split(' ').pop();
-    const validUser = await players.authenticateToken(token);
-    req.user = validUser;
-    req.token = validUser.token;
+    const validPlayer = await players.authenticateToken(token);
+    req.user = validPlayer;
+    req.token = validPlayer.token;
     next();
   } catch (e) {
     authError();
