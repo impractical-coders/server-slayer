@@ -1,17 +1,15 @@
 'use strict';
 
-//jwt package - json web token
+//json web token
 const jwt = require('jsonwebtoken');
-// basic auth package
-const auth = require('basic-auth');
-// jwks - json web key set
+
+//json web key set
 const jwksClient = require('jwks-rsa');
 
 const client = jwksClient({
   jwksUri: process.env.JWKS_URI,
 });
 
-// getkey function to intiate process
 // https://www.npmjs.com/package/jsonwebtoken (search for auth0)
 function getKey(header, callback) {
   client.getSigningKey(header.kid, function (err, key) {
@@ -20,7 +18,7 @@ function getKey(header, callback) {
   });
 }
 
-// we need to verfy that the user on our route is who they say
+//verify that the user is approved
 function verifyUser(req, errorFirstOrUserCallbackFunction) {
   try {
 
@@ -31,7 +29,7 @@ function verifyUser(req, errorFirstOrUserCallbackFunction) {
     // from jsonwebtoken docs
     jwt.verify(token, getKey, {}, errorFirstOrUserCallbackFunction);
   } catch (error) {
-    errorFirstOrUserCallbackFunction('not authorized');
+    errorFirstOrUserCallbackFunction('Oops. Try Again');
   }
 }
 
