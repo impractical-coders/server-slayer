@@ -2,7 +2,6 @@
 
 module.exports = function (err, req, res, next) {
 
-
   const error = err.message ? err.message : err;
 
   const errorObject = {
