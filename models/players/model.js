@@ -1,7 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../../config/connection');
 const bcrypt = require('bcrypt');
-
 class Player extends Model {
 
   checkPassword(loginPassword) {
@@ -37,7 +36,19 @@ Player.init(
     gamesPlayed: {
       type: DataTypes.INTEGER,
     },
+    banned: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   },
+
+  Player.update({
+    banned: true,
+  }, {
+    where: { username: '' },
+  }),
+  
   {
     hooks: {
 
