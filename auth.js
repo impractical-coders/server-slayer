@@ -2,11 +2,13 @@
 
 //jwt package - json web token
 const jwt = require('jsonwebtoken');
+// basic auth package
+
 // jwks - json web key set
 const jwksClient = require('jwks-rsa');
 
 const client = jwksClient({
-  jwksUri: process.env.JWKS_URI
+  jwksUri: process.env.JWKS_URI,
 });
 
 // getkey function to intiate process
