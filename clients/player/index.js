@@ -33,8 +33,8 @@ gameSocket.on('lobbyStatus', (currentPlayers) => {
   console.log(`${currentPlayers[currentPlayers.length - 1].name} has joined the lobby.`);
   console.log(`Players in the lobby: ${currentPlayers.length}`);
 });
-// start the game
-gameSocket.on('gameStart', (msg) => {
+// start the game .once happen 1 time
+gameSocket.once('gameStart', (msg) => {
   console.log(msg);
   gameSocket.emit('myRole', name);
 });
@@ -48,21 +48,30 @@ gameSocket.on('myRole', (yourRole) => {
   gameSocket.emit('roomChange', rooms[rngRoomIdx], name);
   myCurrentRoom = `${rooms[rngRoomIdx]}`;
   console.log(`Current location: ${myCurrentRoom}.`);
-
-  console.log('hi');
 });
 
-gameSocket.on('roomStatus', (currentRoom) => {
-  playersInCurrentRoom = currentRoom;
-  console.log(playersInCurrentRoom);
-  console.log(`Players inside this room: ${currentRoom.toString()}`);
+// global events listener
+gameSocket.on('globalEvents', (msg)=>{
+  console.log(msg);
+});
+
+// room status
+gameSocket.on('roomStatus', (currentRoomPlayers, thisRoom) => {
+  myCurrentRoom = thisRoom;
+  // console.log('56', myCurrentRoom);
+  playersInCurrentRoom = currentRoomPlayers;
+  console.log(`Players inside this room: ${currentRoomPlayers.toString()}`);
   //TODO: prompt will render multiple times when more players join the room MAY HAVE TO CREATE A NEW EVENT
-  playerAction(role);
+  actionMainList(role);
 });
 
 gameSocket.on('leftRoom', (name, updatedInsideRoom) => {
-  console.log(`need to update playersInCurrentRoom ${updatedInsideRoom}`);
+
   console.log(`${name} has left this room.`);
+
+  let idx = playersInCurrentRoom.indexOf(updatedInsideRoom);
+  playersInCurrentRoom.splice(idx, 1);
+  console.log(`Still in this room: ${playersInCurrentRoom}`);
 });
 
 // slayer kill 
@@ -74,7 +83,7 @@ gameSocket.on('leftRoom', (name, updatedInsideRoom) => {
 
 
 //function
-function playerAction (role){
+function actionMainList (role){
   if (role === 'slayer') {
     inquirer
       .prompt([
@@ -91,30 +100,11 @@ function playerAction (role){
       ])
       .then((answers) => {
         choice = answers.action.charAt(0);
-        console.log(`role: slayer ${choice}`);
+        // console.log('97', myCurrentRoom);
+        actionRoomList(myCurrentRoom, playersInCurrentRoom);
       });
-    console.log('did i get here?');
-    if (choice === '1'){
-      console.log('ert');
-      inquirer
-        .prompt([
-          {
-            type: 'list',
-            name: 'action',
-            message: 'Which room do you want to go to?',
-            choices: [
-              '1) bathroom',
-              '2) basement',
-              '3) attic',
-              // new inquirer.Separator(),
-            ],
-          },
-        ])
-        .then((answers) => {
-          choice = answers.action.charAt(0);
-          console.log(`role: slayer ${choice}`);
-        });
-    }
+
+    
 
   } else if (role === 'human') {
     inquirer
@@ -140,6 +130,54 @@ function playerAction (role){
   // }
 }
 
+// move to another room
+function actionRoomList (myCurrentRoom, playersInCurrentRoom){
+  //Move to another room
+  if (choice === '1'){
+    myPrevRoom = myCurrentRoom;
+    let newRooms = rooms.filter(i => i !== myCurrentRoom);
+    // let idx = newRooms.indexOf(myCurrentRoom);
+    // console.log('idx',  idx);
+    // newRooms.splice(idx, 1);
+    // console.log('137 filterd room ', newRooms);
+    inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'action',
+          message: 'Which room do you want to go to?',
+          choices: [
+            `${newRooms[0]}`,
+            `${newRooms[1]}`,
+            // new inquirer.Separator(),
+          ],
+        },
+      ])
+      .then((answers) => {
+        choice = answers.action;
+        myCurrentRoom = choice;
+        gameSocket.emit('roomChange', choice, name, myPrevRoom);
+        // console.log('155 my current room', myCurrentRoom);
+      });
+  } else if (choice === '2'){
+    //Kill a player playersInCurrentRoom
+    let userArr = playersInCurrentRoom.filter(i => i !== name);
+    console.log(userArr);
+    inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'action',
+          message: 'Which would you like to kill?',
+          choices: userArr,
+        },
+      ])
+      .then((answers) => {
+        gameSocket.emit('playerKill', answers.action);
+      });
+  }
+
+}
 
 //test input
 // const questions = [

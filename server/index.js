@@ -18,6 +18,8 @@ let game = io.of('/game');
 
 // game data
 let currentPlayers = [];
+let deadArr = [];
+// let aliveArr = [];
 // let bathroomArr = [];
 // let basementArr =[];
 // let atticArr =[];
@@ -76,17 +78,29 @@ game.on('connection', (socket) => {
     socket.emit('myRole', role);
   });
 
+  // slayer kill
+  socket.on('playerKill', (personToBeKilled) => {
+    for (let i = 0; i < currentPlayers.length; i++) {
+      if (personToBeKilled === currentPlayers[i].name) {
+        currentPlayers[i].role = 'dead';
+      }
+    }
+    deadArr.push(personToBeKilled);
+    console.log(personToBeKilled);
+
+  });
 
   // room change
-  socket.on('roomChange', (roomChange, name , prevRoom = 0) => {
-    if (prevRoom !== 0){
+  socket.on('roomChange', (roomChange, name, prevRoom = 0) => {
+    if (prevRoom !== 0) {
       socket.leave(prevRoom);
-      let idx = insideRoom[`${prevRoom}`].indexof(name);
-      console.log('idx',  idx);
+      // let newInsideRoom = insideRoom[`${prevRoom}`].filter(i => i !== name);
+      let idx = insideRoom[`${prevRoom}`].indexOf(name);
+      console.log('idx', idx);
       let updatedInsideRoom = insideRoom[`${prevRoom}`].splice(idx, 1);
       console.log(updatedInsideRoom);
       game.to(prevRoom).emit('leftRoom', name, updatedInsideRoom);
-      
+
     }
     socket.join(roomChange);
     // if (roomChange === 'bathroom'){
@@ -98,21 +112,18 @@ game.on('connection', (socket) => {
     // }
 
     //tracking who is in what room
-    if (insideRoom[`${roomChange}`]){
+    if (insideRoom[`${roomChange}`]) {
       insideRoom[`${roomChange}`].push(name);
     } else {
       insideRoom[`${roomChange}`] = [];
       insideRoom[`${roomChange}`].push(name);
     }
-    let currentRoom = insideRoom[`${roomChange}`];
+    let currentRoomPlayers = insideRoom[`${roomChange}`];
     // console.log(`currentRoom: ${JSON.stringify(currentRoom, null, 2)}`);
-    game.to(roomChange).emit('roomStatus', currentRoom);
+    game.to(roomChange).emit('roomStatus', currentRoomPlayers, roomChange);
   });
 
-  // slayer kill
-  game.on('playerKill', (personToBeKilled) => {
-    console.log(personToBeKilled);
-  });
+
 
   // socket.on('status', (payload) => {
   //   game.emit('status', payload);
