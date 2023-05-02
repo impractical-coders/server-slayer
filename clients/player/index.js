@@ -93,7 +93,7 @@ function playerAction (role){
         choice = answers.action.charAt(0);
         console.log(`role: slayer ${choice}`);
       });
-      console.log('did i get here?');
+    console.log('did i get here?');
     if (choice === '1'){
       console.log('ert');
       inquirer
