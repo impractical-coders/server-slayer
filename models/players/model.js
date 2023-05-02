@@ -3,20 +3,19 @@
 const playerModel = (sequelize, DataTypes) => sequelize.define ('player',
 
   {
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-      validate: {
-        isEmail: true,
-      },
-    },
+    // email: {
+    //   type: DataTypes.STRING,
+    //   allowNull: false,
+    //   unique: true,
+    //   validate: {
+    //     isEmail: true,
+    //   },
     username: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
       validate: {
-        isUsername: true,
+        isEmail: true,
       },
     },
     password: {

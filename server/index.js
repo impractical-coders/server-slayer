@@ -1,10 +1,57 @@
 'use strict';
 // run server with npm run dev (will use nodemon)
 const { Server } = require('socket.io');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 const PORT = process.env.PORT || 3002;
 const io = new Server(PORT);
 let game = io.of('/game');
+
+const readline = require('readline');
+
+const { db, players } = require('../models');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  terminal: true,
+});
+
+db.sync().then(
+  rl.question('Enter your username: ', (username) => {
+    rl.stdoutMuted = true;
+    rl.question('Enter your password: ', (password) => {
+      rl.close();
+      bcrypt.hash(password, 10, (err, hash) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        players.create({
+          username: username,
+          password: hash,
+          gamesPlayed: 0,
+          banned: false,
+          time: Date.now(),
+        })
+          .then((player) => {
+            console.log(`User ${player.username} has been created`);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      });
+    });
+  }));
+
+rl._writeToOutput = (stringToWrite) => {
+  if (rl.stdoutMuted)
+    rl.output.write('*');
+  else
+    rl.output.write(stringToWrite);
+};
+
+
 
 //EVENT Logger
 // const date = new Date();
