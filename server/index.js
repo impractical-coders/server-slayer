@@ -18,8 +18,10 @@ let game = io.of('/game');
 
 // game data
 let currentPlayers = [];
-
-
+// let bathroomArr = [];
+// let basementArr =[];
+// let atticArr =[];
+let insideRoom = {};
 
 class Player {
   constructor(name) {
@@ -51,13 +53,13 @@ game.on('connection', (socket) => {
       let newPlayer = new Player(name);
       currentPlayers.push(newPlayer);
       game.emit('lobbyStatus', currentPlayers);
-      console.log(`currentPlayers: ${JSON.stringify(currentPlayers, null, 2)}`);
+      // console.log(`currentPlayers: ${JSON.stringify(currentPlayers, null, 2)}`);
     }
     if (currentPlayers.length === 3) {
       // ramdomly pick a player to be SLAYER
       let slayerIdx = Math.floor(Math.random() * currentPlayers.length);
       currentPlayers[slayerIdx].role = 'slayer';
-      console.log(slayerIdx);
+      // console.log(slayerIdx);
       let msg = 'The game will now start.';
       game.emit('gameStart', msg);
     }
@@ -68,22 +70,45 @@ game.on('connection', (socket) => {
     for (let i = 0; i < currentPlayers.length; i++) {
       if (name === currentPlayers[i].name) {
         role = currentPlayers[i].role;
-        console.log(role);
+        // console.log(role);
       }
     }
     socket.emit('myRole', role);
   });
 
+
   // room change
-  socket.on('roomChange', (roomChange, name) => {
+  socket.on('roomChange', (roomChange, name , prevRoom = 0) => {
+    if (prevRoom !== 0){
+      socket.leave(prevRoom);
+      let idx = insideRoom[`${prevRoom}`].indexof(name);
+      console.log('idx',  idx);
+      let updatedInsideRoom = insideRoom[`${prevRoom}`].splice(idx, 1);
+      console.log(updatedInsideRoom);
+      game.to(prevRoom).emit('leftRoom', name, updatedInsideRoom);
+      
+    }
     socket.join(roomChange);
-    //TODO: need to store who is in that room & send a msg to everyone in that room
-    let roomStatus = `Currently in this room: ${name}`;
-    game.to(roomChange).emit('roomStatus', roomStatus);
+    // if (roomChange === 'bathroom'){
+    //   bathroomArr.push(name);
+    // } else if (roomChange === 'basement'){
+    //   basementArr.push(name);
+    // } else if (roomChange === 'attic'){
+    //   atticArr.push(name);
+    // }
+
+    //tracking who is in what room
+    if (insideRoom[`${roomChange}`]){
+      insideRoom[`${roomChange}`].push(name);
+    } else {
+      insideRoom[`${roomChange}`] = [];
+      insideRoom[`${roomChange}`].push(name);
+    }
+    let currentRoom = insideRoom[`${roomChange}`];
+    // console.log(`currentRoom: ${JSON.stringify(currentRoom, null, 2)}`);
+    game.to(roomChange).emit('roomStatus', currentRoom);
   });
 
-    
-  
   // slayer kill
   game.on('playerKill', (personToBeKilled) => {
     console.log(personToBeKilled);
@@ -95,6 +120,8 @@ game.on('connection', (socket) => {
   // });
 
   //all game .on, .emit needs to be inside this block
+
+
 });
 
 
