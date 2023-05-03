@@ -67,6 +67,7 @@ let game = io.of('/game');
 let currentPlayers = [];
 let deadArr = [];
 let aliveArr = [];
+let slayer = null;
 // let bathroomArr = [];
 // let basementArr =[];
 // let atticArr =[];
@@ -80,14 +81,6 @@ class Player {
   }
 }
 
-// class Room {
-//   constructor(roomName, task, ans) {
-//     this.roomName = roomName;
-//     this.task = task;
-//     this.ans = ans;
-//   }
-// }
-
 
 //server: /game namespace
 // socket.emit TO THAT Player
@@ -96,7 +89,9 @@ class Player {
 game.on('connection', (socket) => {
   console.log('PLAYER CONNECTED TO /game', socket.id);
   // waiting for players to join the game
+  
   socket.on('joinLobby', (name) => {
+    socket.username = name;
     if (currentPlayers.length < 3) {
       aliveArr.push(name);
       
@@ -109,6 +104,7 @@ game.on('connection', (socket) => {
     if (currentPlayers.length === 3) {
       // ramdomly pick a player to be SLAYER
       let slayerIdx = Math.floor(Math.random() * currentPlayers.length);
+      slayer = currentPlayers[slayerIdx].name;
       currentPlayers[slayerIdx].role = 'slayer';
       let msg = 'The game will now start.';
       game.emit('gameStart', msg);
@@ -132,6 +128,7 @@ game.on('connection', (socket) => {
         currentPlayers[i].role = 'dead';
       }
     }
+    console.log('139', currentPlayers);
     deadArr.push(personToBeKilled);
     let idx = aliveArr.indexOf(personToBeKilled);
     aliveArr.splice(idx, 1);
@@ -173,10 +170,26 @@ game.on('connection', (socket) => {
   //   game.emit('status', payload);
   //   console.log('back to server: ', payload);
   // });
-
+  socket.on('disconnect', () => {
+    if (socket.username === slayer){
+      game.emit('globalEvent', 'Slayer has left the game. The game will now end.');
+      //TODO: need to disconnect clients
+    }
+    let idx = currentPlayers.findIndex(obj => obj.name === socket.username);
+    // console.log(`BEFORE: ${JSON.stringify(currentPlayers, null, 2)}`);
+    currentPlayers.splice(idx, 1);
+    let idx2 = aliveArr.indexOf(socket.username);
+    aliveArr.splice(idx2, 1);
+    console.log(aliveArr);
+    // console.log(`AFTER: ${JSON.stringify(currentPlayers, null, 2)}`);
+    let msg =`${socket.username} is disconnected.`;
+    console.log(msg);
+    game.emit('globalEvent',msg);
+  });
   //all game .on, .emit needs to be inside this block
 
 
 });
+
 
 
