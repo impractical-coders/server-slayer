@@ -1,6 +1,8 @@
 const { io } = require('socket.io-client');
 const assert = require('assert');
+const { Socket } = require('socket.io');
 require('dotenv').config();
+const gameSocket = require('./index');
 
 const SERVER_URL = process.env.SERVER_URL || 'http://localhost:3002';
 let gameSocket;
@@ -30,3 +32,4 @@ describe('Game tests', () => {
     gameSocket.emit('joinLobby', playerName);
   });
 });
+
