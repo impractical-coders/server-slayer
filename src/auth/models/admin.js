@@ -1,18 +1,11 @@
 'use strict';
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const SECRET = process.env.SECRET || 'HIDE FROME ME';
 
 const adminModel = (sequelize, DataTypes) => {
   const model = sequelize.define('admin', {
-    // email: {
-    //   type: DataTypes.STRING,
-    //   primaryKey: true,
-    // },
-    // isAdmin: {
-    //   type: DataTypes.BOOLEAN,
-    //   allowNull: false,
-    // },
     username: { type: DataTypes.STRING, required: true, unique: true },
     password: { type: DataTypes.STRING, required: true },
     role: { type: DataTypes.ENUM('player', 'admin'), defaultValue: 'player' },
@@ -39,7 +32,7 @@ const adminModel = (sequelize, DataTypes) => {
     },
   });
 
-  model.beforeCreate(async(user) => {
+  model.beforeCreate(async (user) => {
     let hashedPass = await bcrypt.hash(user.password, 10);
     user.password = hashedPass;
   });
@@ -47,7 +40,7 @@ const adminModel = (sequelize, DataTypes) => {
   model.authenticateBasic = async function (username, password) {
     const user = await this.findOne({ where: { username } });
     const valid = await bcrypt.compare(password, user.password);
-    if(valid) { return user; }
+    if (valid) { return user; }
     throw new Error('Invalid User');
   };
 
@@ -66,3 +59,12 @@ const adminModel = (sequelize, DataTypes) => {
 };
 
 module.exports = adminModel;
+
+   // email: {
+    //   type: DataTypes.STRING,
+    //   primaryKey: true,
+    // },
+    // isAdmin: {
+    //   type: DataTypes.BOOLEAN,
+    //   allowNull: false,
+    // },
