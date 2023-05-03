@@ -1,76 +1,32 @@
-'use strict';
+const { io } = require('socket.io-client');
+const assert = require('assert');
+require('dotenv').config();
 
-const socket = require('../socket');
-// const emitter = require('../eventPool');
-const { PkgReadyToDriver, DriverPickUpPkg, DriverDeliverPkg, DeliverPkgToVendor } = require('./handler');
+const SERVER_URL = process.env.SERVER_URL || 'http://localhost:3002';
+let gameSocket;
 
-// jest.mock('../eventPool', () => {
-//   return {
-//     on: jest.fn(),
-//     emit: jest.fn(),
-//   };
-// });
+describe('Game tests', () => {
+  before(() => {
+    // connect to the game server
+    gameSocket = io(SERVER_URL + '/game');
+  });
 
-jest.mock('../socket', () => {
-  return {
-    on: jest.fn(),
-    emit: jest.fn(),
-  };
-});
+  after(() => {
+    // disconnect from the game server
+    gameSocket.disconnect();
+  });
 
-console.log = jest.fn();
+  it('should emit joinLobby event with player name', (done) => {
+    const playerName = 'test player';
 
-let payload = {
-  store: 'ss',
-  orderId: "order2893247",
-  customer: "customer575",
-  address: "USA"
-};
+    // listen for the 'lobbyStatus' 
+    gameSocket.on('lobbyStatus', (currentPlayers) => {
+      const lastPlayer = currentPlayers[currentPlayers.length - 1];
+      assert.strictEqual(lastPlayer.name, playerName);
+      done();
+    });
 
-xtest('2 notified when there is a package to be delivered.', async () => {
-
-  PkgReadyToDriver(payload);
-  expect(emitter.emit).toHaveBeenCalledWith('PkgReadyToDriver', payload);
-});
-
-xtest('3 in transit.', async () => {
-
-  DriverPickUpPkg(payload);
-  expect(emitter.emit).toHaveBeenCalledWith('DriverPickUpPkg', payload);
-});
-
-xtest('4 driver alert package has been delivered.', async () => {
-
-  DriverDeliverPkg(payload);
-  expect(emitter.emit).toHaveBeenCalledWith('DriverDeliverPkg', payload);
-});
-
-xtest('5 vendor receive alert package has been delivered', async () => {
-
-  DeliverPkgToVendor(payload);
-  expect(emitter.emit).toHaveBeenCalledWith('DeliverPkgToVendor', payload);
-});
-
-test('socket notified when there is a package to be delivered.', async () => {
-
-  PkgReadyToDriver(payload, socket);
-  expect(socket.emit).toHaveBeenCalledWith('PkgReadyToDriver', payload);
-});
-
-test('socket in transit.', async () => {
-
-  DriverPickUpPkg(payload, socket);
-  expect(socket.emit).toHaveBeenCalledWith('DriverPickUpPkg', payload);
-});
-
-test('socket driver alert package has been delivered.', async () => {
-
-  DriverDeliverPkg(payload, socket);
-  expect(socket.emit).toHaveBeenCalledWith('DriverDeliverPkg', payload);
-});
-
-test('socket vendor receive alert package has been delivered', async () => {
-
-  DeliverPkgToVendor(payload,socket);
-  expect(socket.emit).toHaveBeenCalledWith('DeliverPkgToVendor', payload);
+    // emit the 'joinLobby' event with the player name
+    gameSocket.emit('joinLobby', playerName);
+  });
 });
