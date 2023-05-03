@@ -7,49 +7,49 @@ const PORT = process.env.PORT || 3002;
 const io = new Server(PORT);
 let game = io.of('/game');
 
-const readline = require('readline');
+// const readline = require('readline');
 
-const { db, players } = require('../models');
+// const { db, players } = require('../models');
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  terminal: true,
-});
+// const rl = readline.createInterface({
+//   input: process.stdin,
+//   output: process.stdout,
+//   terminal: true,
+// });
 
-db.sync().then(
-  rl.question('Enter your username: ', (username) => {
-    rl.stdoutMuted = true;
-    rl.question('Enter your password: ', (password) => {
-      rl.close();
-      bcrypt.hash(password, 10, (err, hash) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        players.create({
-          username: username,
-          password: hash,
-          gamesPlayed: 0,
-          banned: false,
-          time: Date.now(),
-        })
-          .then((player) => {
-            console.log(`User ${player.username} has been created`);
-          })
-          .catch((err) => {
-            console.error(err);
-          });
-      });
-    });
-  }));
+// db.sync().then(
+//   rl.question('Enter your username: ', (username) => {
+//     rl.stdoutMuted = true;
+//     rl.question('Enter your password: ', (password) => {
+//       rl.close();
+//       bcrypt.hash(password, 10, (err, hash) => {
+//         if (err) {
+//           console.error(err);
+//           return;
+//         }
+//         players.create({
+//           username: username,
+//           password: hash,
+//           gamesPlayed: 0,
+//           banned: false,
+//           time: Date.now(),
+//         })
+//           .then((player) => {
+//             console.log(`User ${player.username} has been created`);
+//           })
+//           .catch((err) => {
+//             console.error(err);
+//           });
+//       });
+//     });
+//   }));
 
-rl._writeToOutput = (stringToWrite) => {
-  if (rl.stdoutMuted)
-    rl.output.write('*');
-  else
-    rl.output.write(stringToWrite);
-};
+// rl._writeToOutput = (stringToWrite) => {
+//   if (rl.stdoutMuted)
+//     rl.output.write('*');
+//   else
+//     rl.output.write(stringToWrite);
+// };
 
 
 
@@ -66,7 +66,7 @@ rl._writeToOutput = (stringToWrite) => {
 // game data
 let currentPlayers = [];
 let deadArr = [];
-// let aliveArr = [];
+let aliveArr = [];
 // let bathroomArr = [];
 // let basementArr =[];
 // let atticArr =[];
@@ -75,7 +75,7 @@ let insideRoom = {};
 class Player {
   constructor(name) {
     this.name = name;
-    this.role = 'human';
+    this.role = 'survivor';
     this.score = 0;
   }
 }
@@ -98,6 +98,8 @@ game.on('connection', (socket) => {
   // waiting for players to join the game
   socket.on('joinLobby', (name) => {
     if (currentPlayers.length < 3) {
+      aliveArr.push(name);
+      
       // create Obj for each player
       let newPlayer = new Player(name);
       currentPlayers.push(newPlayer);
@@ -108,7 +110,6 @@ game.on('connection', (socket) => {
       // ramdomly pick a player to be SLAYER
       let slayerIdx = Math.floor(Math.random() * currentPlayers.length);
       currentPlayers[slayerIdx].role = 'slayer';
-      // console.log(slayerIdx);
       let msg = 'The game will now start.';
       game.emit('gameStart', msg);
     }
@@ -119,7 +120,6 @@ game.on('connection', (socket) => {
     for (let i = 0; i < currentPlayers.length; i++) {
       if (name === currentPlayers[i].name) {
         role = currentPlayers[i].role;
-        // console.log(role);
       }
     }
     socket.emit('myRole', role);
@@ -133,8 +133,12 @@ game.on('connection', (socket) => {
       }
     }
     deadArr.push(personToBeKilled);
-    console.log(personToBeKilled);
-
+    let idx = aliveArr.indexOf(personToBeKilled);
+    aliveArr.splice(idx, 1);
+    console.log('dead', deadArr);
+    console.log('alive140', aliveArr);
+    let msg = `[ALERT] ${personToBeKilled} is found DEAD!`;
+    game.emit('vote', msg, aliveArr);
   });
 
   // room change
@@ -150,14 +154,6 @@ game.on('connection', (socket) => {
 
     }
     socket.join(roomChange);
-    // if (roomChange === 'bathroom'){
-    //   bathroomArr.push(name);
-    // } else if (roomChange === 'basement'){
-    //   basementArr.push(name);
-    // } else if (roomChange === 'attic'){
-    //   atticArr.push(name);
-    // }
-
     //tracking who is in what room
     if (insideRoom[`${roomChange}`]) {
       insideRoom[`${roomChange}`].push(name);
@@ -168,6 +164,7 @@ game.on('connection', (socket) => {
     let currentRoomPlayers = insideRoom[`${roomChange}`];
     // console.log(`currentRoom: ${JSON.stringify(currentRoom, null, 2)}`);
     game.to(roomChange).emit('roomStatus', currentRoomPlayers, roomChange);
+    socket.emit('playerAction', 'nth');
   });
 
 
