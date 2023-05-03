@@ -17,7 +17,7 @@ afterAll(async () => {
 
 describe('v1 routes', () => {
   it('creates a player item', async () => {
-    let response = await request.post('/api/v1/players').send({
+    let response = await request.post('/api/v2/players').send({
       username: 'johnnyboy',
       email: 'johnnywick@yahoo.com',
     });
@@ -26,14 +26,14 @@ describe('v1 routes', () => {
   });
 
   it('gets all player items', async () => {
-    let response = await request.get('/api/v1/players');
+    let response = await request.get('/api/v2/players');
     expect(response.status).toEqual(200);
     expect(response.body[0].name).toString('johnnyboy');
   },
   );
 
   it('updates a player item', async () => {
-    let response = await request.put('/api/v1/players/1').send({
+    let response = await request.put('/api/v2/players/1').send({
       username: 'johnnyboy',
       email: 'johnnywick@yahoo.com',
     });

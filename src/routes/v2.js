@@ -35,7 +35,6 @@ async function handleGetOne(req, res) {
 
 async function handleCreate(req, res) {
   let obj = req.body;
-  console.log('Should return an object: ',obj);
   let newRecord = await req.model.create(obj);
   res.status(201).json(newRecord);
 }
