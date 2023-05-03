@@ -1,10 +1,57 @@
 'use strict';
 // run server with npm run dev (will use nodemon)
 const { Server } = require('socket.io');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 const PORT = process.env.PORT || 3002;
 const io = new Server(PORT);
 let game = io.of('/game');
+
+const readline = require('readline');
+
+const { db, players } = require('../models');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  terminal: true,
+});
+
+db.sync().then(
+  rl.question('Enter your username: ', (username) => {
+    rl.stdoutMuted = true;
+    rl.question('Enter your password: ', (password) => {
+      rl.close();
+      bcrypt.hash(password, 10, (err, hash) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        players.create({
+          username: username,
+          password: hash,
+          gamesPlayed: 0,
+          banned: false,
+          time: Date.now(),
+        })
+          .then((player) => {
+            console.log(`User ${player.username} has been created`);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      });
+    });
+  }));
+
+rl._writeToOutput = (stringToWrite) => {
+  if (rl.stdoutMuted)
+    rl.output.write('*');
+  else
+    rl.output.write(stringToWrite);
+};
+
+
 
 //EVENT Logger
 // const date = new Date();
@@ -18,6 +65,8 @@ let game = io.of('/game');
 
 // game data
 let currentPlayers = [];
+let deadArr = [];
+// let aliveArr = [];
 // let bathroomArr = [];
 // let basementArr =[];
 // let atticArr =[];
@@ -76,17 +125,29 @@ game.on('connection', (socket) => {
     socket.emit('myRole', role);
   });
 
+  // slayer kill
+  socket.on('playerKill', (personToBeKilled) => {
+    for (let i = 0; i < currentPlayers.length; i++) {
+      if (personToBeKilled === currentPlayers[i].name) {
+        currentPlayers[i].role = 'dead';
+      }
+    }
+    deadArr.push(personToBeKilled);
+    console.log(personToBeKilled);
+
+  });
 
   // room change
-  socket.on('roomChange', (roomChange, name , prevRoom = 0) => {
-    if (prevRoom !== 0){
+  socket.on('roomChange', (roomChange, name, prevRoom = 0) => {
+    if (prevRoom !== 0) {
       socket.leave(prevRoom);
-      let idx = insideRoom[`${prevRoom}`].indexof(name);
-      console.log('idx',  idx);
+      // let newInsideRoom = insideRoom[`${prevRoom}`].filter(i => i !== name);
+      let idx = insideRoom[`${prevRoom}`].indexOf(name);
+      console.log('idx', idx);
       let updatedInsideRoom = insideRoom[`${prevRoom}`].splice(idx, 1);
       console.log(updatedInsideRoom);
       game.to(prevRoom).emit('leftRoom', name, updatedInsideRoom);
-      
+
     }
     socket.join(roomChange);
     // if (roomChange === 'bathroom'){
@@ -98,21 +159,18 @@ game.on('connection', (socket) => {
     // }
 
     //tracking who is in what room
-    if (insideRoom[`${roomChange}`]){
+    if (insideRoom[`${roomChange}`]) {
       insideRoom[`${roomChange}`].push(name);
     } else {
       insideRoom[`${roomChange}`] = [];
       insideRoom[`${roomChange}`].push(name);
     }
-    let currentRoom = insideRoom[`${roomChange}`];
+    let currentRoomPlayers = insideRoom[`${roomChange}`];
     // console.log(`currentRoom: ${JSON.stringify(currentRoom, null, 2)}`);
-    game.to(roomChange).emit('roomStatus', currentRoom);
+    game.to(roomChange).emit('roomStatus', currentRoomPlayers, roomChange);
   });
 
-  // slayer kill
-  game.on('playerKill', (personToBeKilled) => {
-    console.log(personToBeKilled);
-  });
+
 
   // socket.on('status', (payload) => {
   //   game.emit('status', payload);
