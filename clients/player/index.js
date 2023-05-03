@@ -35,6 +35,14 @@ gameSocket.on('globalEvent', (msg)=>{
   console.log(msg);
 });
 
+// vote result action
+gameSocket.on('voteResult', (maxVotePlayer)=>{
+  if (maxVotePlayer[0] === playerData.name){
+    console.log('You have been kicked out! [Game Over]');
+    gameSocket.disconnect(playerData.name);
+  }
+});
+
 // getting lobby status
 gameSocket.on('lobbyStatus', (currentPlayers) => {
   console.log(`${currentPlayers[currentPlayers.length - 1].name} has joined the lobby.`);
@@ -56,19 +64,18 @@ gameSocket.on('myRole', (yourRole) => {
 gameSocket.on('vote', (msg, aliveArr)=>{
   if (aliveArr.includes(playerData.name)){
     console.log(msg);
-    vote(aliveArr, playerData);
+    vote(aliveArr, playerData,gameSocket);
   } else {
-    console.log('You have been killed!');
+    console.log('You have been killed! [Game Over]');
     //TODO: show result? update score? clear prompt
     gameSocket.disconnect(playerData.name);
   }
-    
 });
+
 
 
 gameSocket.on('roomStatus', (currentRoomPlayers, thisRoom) => {
   roomStatus(currentRoomPlayers, thisRoom, playerData);
-
 });
 
 // make playerAction a separate event, instead of attached to roomstatus

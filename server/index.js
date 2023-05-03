@@ -67,12 +67,11 @@ let game = io.of('/game');
 let currentPlayers = [];
 let deadArr = [];
 let aliveArr = [];
+let kickArr = [];
 let slayer = null;
-// let bathroomArr = [];
-// let basementArr =[];
-// let atticArr =[];
 let insideRoom = {};
-
+let resultArr = [];
+let counts = {};
 class Player {
   constructor(name) {
     this.name = name;
@@ -89,19 +88,19 @@ class Player {
 game.on('connection', (socket) => {
   console.log('PLAYER CONNECTED TO /game', socket.id);
   // waiting for players to join the game
-  
+
   socket.on('joinLobby', (name) => {
     socket.username = name;
-    if (currentPlayers.length < 3) {
+    if (currentPlayers.length < 4) {
       aliveArr.push(name);
-      
+
       // create Obj for each player
       let newPlayer = new Player(name);
       currentPlayers.push(newPlayer);
       game.emit('lobbyStatus', currentPlayers);
       // console.log(`currentPlayers: ${JSON.stringify(currentPlayers, null, 2)}`);
     }
-    if (currentPlayers.length === 3) {
+    if (currentPlayers.length === 4) {
       // ramdomly pick a player to be SLAYER
       let slayerIdx = Math.floor(Math.random() * currentPlayers.length);
       slayer = currentPlayers[slayerIdx].name;
@@ -144,9 +143,8 @@ game.on('connection', (socket) => {
       socket.leave(prevRoom);
       // let newInsideRoom = insideRoom[`${prevRoom}`].filter(i => i !== name);
       let idx = insideRoom[`${prevRoom}`].indexOf(name);
-      console.log('idx', idx);
       let updatedInsideRoom = insideRoom[`${prevRoom}`].splice(idx, 1);
-      console.log(updatedInsideRoom);
+      // console.log(updatedInsideRoom);
       game.to(prevRoom).emit('leftRoom', name, updatedInsideRoom);
 
     }
@@ -164,27 +162,85 @@ game.on('connection', (socket) => {
     socket.emit('playerAction', 'nth');
   });
 
+  socket.on('voteResult', (vote) => {
+    console.log('165res', resultArr.length);
+    resultArr.push(vote);
+    console.log('vote', resultArr);
+    // console.log(`vote results ${JSON.stringify(counts, null, 2)}`);
+    console.log(aliveArr);
 
+    if (resultArr.length === aliveArr.length) {
+      resultArr.forEach(element => {
+        counts[element] = (counts[element] || 0) + 1;
+      });
+
+      console.log(`vote results ${JSON.stringify(counts, null, 2)}`);
+      let maxVotes = 0;
+      let maxVotePlayer = [];
+      let prevVoteCount = null;
+      for (let player in counts) {
+        const voteCount = counts[player];
+        if (prevVoteCount === null) {
+          prevVoteCount = voteCount;
+        }
+        if (voteCount > maxVotes) {
+          maxVotes = voteCount;
+          maxVotePlayer = [player];
+        } else if (voteCount === maxVotes) {
+          maxVotePlayer.push(player);
+        }
+      }
+      console.log('maxVotePlayer', maxVotePlayer);
+      if (maxVotePlayer.length > 1) {
+        let msg = `TIED: Nobody got kicked out. Game continues...`;
+        game.emit('globalEvent', msg);
+      } else {
+        if (maxVotePlayer[0] === slayer) {
+          let msg = `Congratulations, SLAYER has been caught! [Game Over]`;
+          game.emit('globalEvent', msg);
+          game.disconnectSockets(true);
+        } else if (maxVotePlayer[0] === '[SKIP]'){
+          let msg = `Nobody got kicked out. Game continues...`;
+          game.emit('globalEvent', msg);
+        } else {
+          let msg = `${maxVotePlayer} has been kicked out, but SLAYER is still out there! Game continues...`;
+          kickArr.push(maxVotePlayer[0]);
+          let idx = aliveArr.indexOf(maxVotePlayer[0]);
+          aliveArr.splice(idx, 1);
+          if (aliveArr.length === 2){
+            let msg = 'DRAW: 1[Game Over]';
+            game.emit('globalEvent', msg);
+            game.disconnectSockets(true);
+          }
+          game.emit('globalEvent', msg);
+        }
+      }
+      game.emit('voteResult', maxVotePlayer);
+      resultArr = [];
+      counts = {};
+    }
+  });
 
   // socket.on('status', (payload) => {
   //   game.emit('status', payload);
   //   console.log('back to server: ', payload);
   // });
   socket.on('disconnect', () => {
-    if (socket.username === slayer){
+    if (socket.username === slayer) {
       game.emit('globalEvent', 'Slayer has left the game. The game will now end.');
-      //TODO: need to disconnect clients
+      game.disconnectSockets(true);
     }
     let idx = currentPlayers.findIndex(obj => obj.name === socket.username);
     // console.log(`BEFORE: ${JSON.stringify(currentPlayers, null, 2)}`);
     currentPlayers.splice(idx, 1);
-    let idx2 = aliveArr.indexOf(socket.username);
-    aliveArr.splice(idx2, 1);
-    console.log(aliveArr);
+    // console.log('193',aliveArr);
+    // let idx2 = aliveArr.indexOf(socket.username);
+    // aliveArr.splice(idx2, 1);
+    // console.log('194',aliveArr);
     // console.log(`AFTER: ${JSON.stringify(currentPlayers, null, 2)}`);
-    let msg =`${socket.username} is disconnected.`;
+    let msg = `${socket.username} is disconnected.`;
     console.log(msg);
-    game.emit('globalEvent',msg);
+    game.emit('globalEvent', msg);
   });
   //all game .on, .emit needs to be inside this block
 

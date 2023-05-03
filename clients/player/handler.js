@@ -27,9 +27,9 @@ function leftRoomStatus(name, updatedInsideRoom,playerData) {
   console.log(`Still in this room: ${playerData.playersInCurrentRoom}`);
 }
 
-function vote(alivePlayers, playerData) {
+function vote(alivePlayers, playerData, gameSocket) {
   let players = alivePlayers.filter(i => i !== playerData.name);
-  players.push('[ABSTENTION]');
+  players.push('[SKIP]');
   players.push(new inquirer.Separator());
   inquirer
     .prompt([
@@ -41,7 +41,8 @@ function vote(alivePlayers, playerData) {
       },
     ])
     .then((answers) => {
-      console.log(answers.action);
+      // console.log(answers.action);
+      gameSocket.emit('voteResult', answers.action);
     });
 }
 
