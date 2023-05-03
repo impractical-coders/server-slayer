@@ -18,7 +18,7 @@ class DataCollection {
   } 
   update(id, data) {
     return this.model.findOne({ where: { id } })
-      .then(player => player.update(data));
+      .then(players => players.update(data));
   }
   delete(id) {
     return this.model.destroy( { where: { id } });
