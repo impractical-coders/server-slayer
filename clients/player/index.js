@@ -11,9 +11,17 @@ const prompt = require('prompt-sync')({ sigint: true });
 // import functions from handler
 const { vote, actionMainList, leftRoomStatus, roomStatus, myRole } = require('./handler');
 
+const jwt = require('jsonwebtoken');
+
+// const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRob21hcyIsImlhdCI6MTY4MzIyOTU0Mn0.3-UFdoKRd3DRcRFs6XeSJWNv0F3CFLfyMujp8EUfypU';
+let token = prompt('Please enter your token');
+const decoded = jwt.decode(token);
+
+console.log(decoded.username);
+
 // //player data
 let playerData = {
-  name : prompt('Please enter your name: ', 'Gamer'),
+  name : decoded.username,
   rooms : ['bathroom', 'basement', 'attic'],
   myCurrentRoom : null,
   myPrevRoom : null,
