@@ -60,7 +60,7 @@ function actionMainList(playerData, gameSocket) {
           choices: [
             'Move to another room',
             'Kill a player',
-            new inquirer.Separator(),
+            new inquirer.Separator()
           ],
         },
       ])
@@ -78,7 +78,7 @@ function actionMainList(playerData, gameSocket) {
           choices: [
             'Move to another room',
             'Look around',
-            new inquirer.Separator(),
+            new inquirer.Separator()
           ],
         },
       ])
