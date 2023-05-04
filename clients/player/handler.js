@@ -1,7 +1,7 @@
 'use strict';
 const inquirer = require('inquirer');
 
-function myRole(yourRole,gameSocket, playerData){
+function myRole(yourRole, gameSocket, playerData) {
   playerData.role = yourRole;
   console.log(`You are a ${playerData.role.toUpperCase()}`);
   let rngRoomIdx = Math.floor(Math.random() * playerData.rooms.length);
@@ -10,7 +10,7 @@ function myRole(yourRole,gameSocket, playerData){
   console.log(`Current location: ${playerData.myCurrentRoom}.`);
 }
 
-function roomStatus(currentRoomPlayers, thisRoom, playerData){
+function roomStatus(currentRoomPlayers, thisRoom, playerData) {
   playerData.myCurrentRoom = thisRoom;
   playerData.playersInCurrentRoom = currentRoomPlayers;
   // TODO: after vote, same person show up in the room twice, if escape, only that person is shown in this room ALSO, test the winning condition because of ppl can escape
@@ -20,7 +20,7 @@ function roomStatus(currentRoomPlayers, thisRoom, playerData){
   // }
 }
 
-function leftRoomStatus(name, updatedInsideRoom,playerData) {
+function leftRoomStatus(name, updatedInsideRoom, playerData) {
   console.log(`${name} has left this room.`);
   //TODO: if room has 1 person, still in this room will be the person who left why
   // console.log('26 updated list from server',updatedInsideRoom);

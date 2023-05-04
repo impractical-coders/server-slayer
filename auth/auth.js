@@ -1,38 +1,24 @@
 'use strict';
 
-//jwt package - json web token
-const jwt = require('jsonwebtoken');
-// basic auth package
+const base64 = require('base-64');
+const { user } = require('./index.js');
 
-// jwks - json web key set
-const jwksClient = require('jwks-rsa');
+module.exports = async (req, res, next) => {
 
-const client = jwksClient({
-  jwksUri: process.env.JWKS_URI,
-});
+  if (!req.headers.authorization) { return _authError(); }
 
-// getkey function to intiate process
-// https://www.npmjs.com/package/jsonwebtoken (search for auth0)
-function getKey(header, callback) {
-  client.getSigningKey(header.kid, function (err, key) {
-    var signingKey = key.publicKey || key.rsaPublicKey;
-    callback(null, signingKey);
-  });
-}
+  let basic = req.headers.authorization.split(' ').pop();
+  let [username, pass] = base64.decode(basic).split(':');
 
-// we need to verfy that the user on our route is who they say
-function verifyUser(req, errorFirstOrUserCallbackFunction) {
   try {
-
-    // extract the token from the user's request
-    const token = req.headers.authorization.split(' ')[1];
-    console.log(token);
-
-    // from jsonwebtoken docs
-    jwt.verify(token, getKey, {}, errorFirstOrUserCallbackFunction);
-  } catch (error) {
-    errorFirstOrUserCallbackFunction('not authorized');
+    req.user = await user.model.authenticateBasic(username, pass);
+    next();
+  } catch (e) {
+    _authError();
   }
-}
 
-module.exports = verifyUser;
+  function _authError() {
+    res.status(403).send('Invalid Login');
+  }
+
+};

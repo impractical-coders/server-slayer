@@ -111,6 +111,7 @@ gameSocket.on('leftRoom', (name, updatedInsideRoom) => {
 
 });
 
+module.export = gameSocket;
 
 //functions
 // function actionMainList (role){
