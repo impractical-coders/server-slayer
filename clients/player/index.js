@@ -13,15 +13,13 @@ const { vote, actionMainList, leftRoomStatus, roomStatus, myRole } = require('./
 
 const jwt = require('jsonwebtoken');
 
-// const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRob21hcyIsImlhdCI6MTY4MzIyOTU0Mn0.3-UFdoKRd3DRcRFs6XeSJWNv0F3CFLfyMujp8EUfypU';
-let token = prompt('Please enter your token');
+// Thomas token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRob21hcyIsImlhdCI6MTY4MzIyOTU0Mn0.3-UFdoKRd3DRcRFs6XeSJWNv0F3CFLfyMujp8EUfypU
+let token = prompt('Please enter your token ');
 const decoded = jwt.decode(token);
 
-console.log(decoded.username);
-
-// //player data
+//player data
 let playerData = {
-  name : decoded.username,
+  name : null,
   rooms : ['bathroom', 'basement', 'attic'],
   myCurrentRoom : null,
   myPrevRoom : null,
@@ -55,10 +53,13 @@ let playerData = {
 };
 
 
-
-if (playerData.name) {
+if (decoded.username !== null){
+  playerData.name = decoded.username;
   gameSocket.emit('joinLobby', playerData.name);
 }
+// if (playerData.name) {
+//   gameSocket.emit('joinLobby', playerData.name);
+// }
 
 gameSocket.on('globalEvent', (msg)=>{
   console.log(msg);
