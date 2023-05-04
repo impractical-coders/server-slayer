@@ -34,7 +34,7 @@ describe('roomStatus function', () => {
 
     // Verify that console.log was called with the expected string
     expect(consoleLog).toHaveBeenCalledWith(
-      'Players in the bathroom: TestPlayer2, TestPlayer3'
+      'Players in the bathroom: TestPlayer2, TestPlayer3',
     );
   });
 });

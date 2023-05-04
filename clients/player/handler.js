@@ -71,23 +71,23 @@ function actionMainList(playerData, gameSocket) {
     //       actionSubList(playerData, gameSocket);
     //     });
     // } else {
-      inquirer
-        .prompt([
-          {
-            type: 'list',
-            name: 'action',
-            message: 'What do you want to do?',
-            choices: [
-              'Move to another room',
-              'Kill a player',
-              new inquirer.Separator()
-            ],
-          },
-        ])
-        .then((answers) => {
-          playerData.choice = answers.action.charAt(0);
-          actionSubList(playerData, gameSocket);
-        });
+    inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'action',
+          message: 'What do you want to do?',
+          choices: [
+            'Move to another room',
+            'Kill a player',
+            new inquirer.Separator()
+          ],
+        },
+      ])
+      .then((answers) => {
+        playerData.choice = answers.action.charAt(0);
+        actionSubList(playerData, gameSocket);
+      });
     // }
   } else if (playerData.role === 'survivor') {
     inquirer
@@ -135,7 +135,7 @@ function actionSubList(playerData, gameSocket) {
     //Kill a player
 
     let userArr = playerData.playersInCurrentRoom.filter(i => i !== playerData.name);
-    if (userArr.length === 0){
+    if (userArr.length === 0) {
       console.log('There is noone to kill.');
       actionMainList(playerData, gameSocket);
     } else {
@@ -147,7 +147,7 @@ function actionSubList(playerData, gameSocket) {
             name: 'action',
             message: 'Which would you like to kill?',
             choices: userArr,
-  
+
           },
         ])
         .then((answers) => {
@@ -160,7 +160,7 @@ function actionSubList(playerData, gameSocket) {
     let msg = playerData.tasks[`${rngIdx}`];
 
     console.log(msg);
-    if (msg.includes('exit')){
+    if (msg.includes('exit')) {
       console.log('[Game Over] Congratulations, you escaped!');
       gameSocket.emit('won', playerData.name, playerData.myCurrentRoom);
       gameSocket.disconnect(playerData.name);
