@@ -1,7 +1,7 @@
 'use strict';
 // run server with npm run dev (will use nodemon)
 const { Server } = require('socket.io');
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcrypt');
 require('dotenv').config();
 const PORT = process.env.PORT || 3002;
 const io = new Server(PORT);
@@ -299,6 +299,3 @@ game.on('connection', (socket) => {
 
 
 });
-
-
-

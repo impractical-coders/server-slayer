@@ -6,8 +6,8 @@ describe('checkPermissions middleware', () => {
   it('should call next() if the user has the required capability', () => {
     const req = {
       user: {
-        capabilities: ['create', 'read', 'update']
-      }
+        capabilities: ['create', 'read', 'update'],
+      },
     };
     const res = {};
     const next = jest.fn();
@@ -20,8 +20,8 @@ describe('checkPermissions middleware', () => {
   it('should call next() with an error message if the user does not have the required capability', () => {
     const req = {
       user: {
-        capabilities: ['create', 'read']
-      }
+        capabilities: ['create', 'read'],
+      },
     };
     const res = {};
     const next = jest.fn();
