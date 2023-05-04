@@ -25,7 +25,7 @@ app.use(logger);
 
 // Routes
 app.use(authRoutes);
-// port 3001 = http://localhost:3001/api/v1/players
+// port 3005 = http://localhost:3005/api/v1/players
 app.use('/api/v1', v1Routes);
 // app.use('/api/v1', v2Routes);
 
