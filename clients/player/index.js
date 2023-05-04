@@ -20,6 +20,30 @@ let playerData = {
   role : null,
   playersInCurrentRoom : null,
   choice : 0,
+  tasks: [
+    'Found a whiteboard.',
+    'Found the exit!',
+    'Found a computer, but there is no power.',
+    'The windows are barred.',
+    'Why is Mona Lisa here?',
+    'There is a bed here.',
+    'Radio says there is a zombie outbreak.',
+    'Cookie Monster!',
+    'This is a very nice fountain.',
+    'Found Cody\'s resume, must hire him when I get out...',
+    'I can see the Statue of Liberty from here.',
+    'The TV is playing SpongeBob.',
+    'Found the game StarCraft 3.',
+    'This house is very old.',
+    'Found Ryan\'s resume, must hire him when I get out...',
+    'Who is this Rapib guy?',
+    'A tiger just walked pass me, need to keep quiet.',
+    'It is 1am in the morning',
+    'Found Thomas\' resume, must hire him when I get out...',
+    'What am I even looking for?',
+    'Must take a nap, kind of tired walking around.',
+    'Found Kameron\'s resume, must hire him when I get out...',
+  ],
 };
 
 
@@ -38,9 +62,10 @@ gameSocket.on('globalEvent', (msg)=>{
 // vote result action
 gameSocket.on('voteResult', (maxVotePlayer)=>{
   if (maxVotePlayer[0] === playerData.name){
-    console.log('You have been kicked out! [Game Over]');
+    console.log('[Game Over] You have been kicked out!');
     gameSocket.disconnect(playerData.name);
   }
+
 });
 
 // getting lobby status
@@ -66,7 +91,7 @@ gameSocket.on('vote', (msg, aliveArr)=>{
     console.log(msg);
     vote(aliveArr, playerData,gameSocket);
   } else {
-    console.log('You have been killed! [Game Over]');
+    console.log('[Game Over] You have been killed!');
     //TODO: show result? update score? clear prompt
     gameSocket.disconnect(playerData.name);
   }
