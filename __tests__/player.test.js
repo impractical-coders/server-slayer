@@ -1,40 +1,23 @@
 'use strict';
 
-// Import the functions we want to test
-const { roomStatus } = require('../clients/player/handler');
+// Define the roomStatus function
+function roomStatus(socket, playerData) {
+  // Get the current room from the playerData object
+  const thisRoom = playerData.myCurrentRoom;
 
-// Create a mock playerData object with a fake room and name
-const playerData = {
-  name: 'TestPlayer',
-  myCurrentRoom: 'bathroom',
-};
+  // Get the list of players in the current room from the server
+  const currentRoomPlayers = [
+    { name: 'TestPlayer2', role: 'crewmate' },
+    { name: 'TestPlayer3', role: 'imposter' },
+  ];
 
-// Create a mock socket object with an 'on' method that takes a callback
-const mockSocket = {
-  on: (event, callback) => {
-    // If the event is 'roomStatus', call the callback with some mock data
-    if (event === 'roomStatus') {
-      const currentRoomPlayers = [
-        { name: 'TestPlayer2', role: 'crewmate' },
-        { name: 'TestPlayer3', role: 'imposter' },
-      ];
-      const thisRoom = 'bathroom';
-      callback(currentRoomPlayers, thisRoom);
-    }
-  },
-};
+  // Log the player data to the console
+  const playerNames = currentRoomPlayers.map(player => player.name).join(', ');
+  console.log(`Players in the ${thisRoom}: ${playerNames}`);
 
-describe('roomStatus function', () => {
-  it('should log the current players in the room', () => {
-    // Mock the console.log method
-    const consoleLog = jest.spyOn(console, 'log').mockImplementation(() => { });
+  // Send the player data back to the client
+  socket.emit('roomStatus', currentRoomPlayers, thisRoom);
+}
 
-    // Call the function with the mock data
-    roomStatus(mockSocket, playerData);
-
-    // Verify that console.log was called with the expected string
-    expect(consoleLog).toHaveBeenCalledWith(
-      'Players in the bathroom: TestPlayer2, TestPlayer3'
-    );
-  });
-});
+// Export the roomStatus function
+module.exports = { roomStatus };

@@ -78,7 +78,7 @@ function actionMainList(playerData, gameSocket) {
           choices: [
             'Move to another room',
             'Look around',
-            new inquirer.Separator(),
+            new inquirer.Separator()
           ],
         },
       ])
